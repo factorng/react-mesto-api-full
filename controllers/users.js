@@ -10,16 +10,19 @@ const createUser = (req, res, next) => {
   } = req.body;
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
-      name, about, avatar, email, password: hash,
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
     }))
-    // вернём записанные в базу данные
-    .then((user) => res.send({ data: user }))
-    // данные не записались, вернём ошибку
     .catch((err) => {
       if (err.name === 'ValidationError') {
         throw new BadRequestError('Некорректные данные');
       } else { next(err); }
-    });
+    })
+    .then((user) => res.status(201).send(user))
+    .catch(next);
 };
 
 const getUsers = (req, res, next) => {

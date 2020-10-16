@@ -17,7 +17,6 @@ const cardsRouter = require('./routes/cards.js');
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-// временное решение авторизации
 
 // подключаемся к серверу mongo
 mongoose.connect('mongodb://localhost:27017/mestodb', {

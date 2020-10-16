@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const isEmail = require('validator/lib/isEmail');
+const isURL = require('validator/lib/isURL');
 const bcrypt = require('bcryptjs'); // импортируем bcrypt
 const UnauthorizedError = require('../errors/unauthorized-err');
 
@@ -21,7 +22,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     validate: {
       validator(v) {
-        return /^((http|https):\/\/)(www\.)?([\w\W\d]{1,})(\.)([a-zA-Z]{1,10})([\w\W\d]{1,})?$/.test(v);
+        return isURL(v);
       },
       message: 'Ссылка некорректная',
     },
