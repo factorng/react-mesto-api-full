@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs'); // импортируем bcrypt
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const BadRequestError = require('../errors/bad-request-err');
+const ConflictError = require('../errors/conflict-err');
 const NotFoundError = require('../errors/not-found-err');
 
 const createUser = (req, res, next) => {
@@ -17,9 +17,9 @@ const createUser = (req, res, next) => {
       password: hash,
     }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new BadRequestError('Некорректные данные');
-      } else { next(err); }
+      if (err.name === 'MongoError' || err.code === 11000) {
+        throw new ConflictError({ message: 'Пользователь с таким email уже зарегистрирован' });
+      } else next(err);
     })
     .then((user) => res.status(201).send(user))
     .catch(next);
