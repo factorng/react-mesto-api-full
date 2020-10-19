@@ -48,7 +48,7 @@ const login = (req, res, next) => {
     // аутентификация успешна! пользователь в переменной user
       const token = jwt.sign(
         { _id: user._id },
-        process.env.JWT_SECRET,
+        'processenvJWT_SECRET',
         { expiresIn: '7d' },
       );
       // вернём токен
