@@ -5,7 +5,7 @@ const auth = (req, res, next) => {
   const token = req.cookies.jwt;
   let payload;
   try {
-    payload = jwt.verify(token, process.env.JWT_SECRET);
+    payload = jwt.verify(token, 'processenvJWT_SECRET');
   } catch (err) {
     throw new UnauthorizedError('Необходима авторизация');
   }
