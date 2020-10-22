@@ -1,12 +1,16 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
+const path = require('path');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
+const { celebrate, Joi } = require('celebrate');
+const cors = require('cors');
 const { auth } = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const NotFoundError = require('./errors/not-found-err');
+const { createUser, login } = require('./controllers/users');
 
 const app = express();
 
@@ -14,13 +18,7 @@ const { PORT = 3000 } = process.env;
 const usersRouter = require('./routes/users.js');
 const cardsRouter = require('./routes/cards.js');
 
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
-
-  next();
-});
+app.use(cors());
 
 app.use(cookieParser());
 app.use(bodyParser.json());
@@ -35,7 +33,29 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use(requestLogger); // подключаем логгер запросов
 
-app.use('/', usersRouter);
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
+
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(8),
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
+    avatar: Joi.string().required(),
+  }).unknown(true),
+}), createUser);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(8),
+  }),
+}), login);
+
+app.use('/', auth, usersRouter);
 app.use('/', auth, cardsRouter);
 app.all('*', (req, res) => {
   throw new NotFoundError('Запрашиваемый ресурс не найден');

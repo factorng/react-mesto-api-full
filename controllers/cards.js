@@ -10,14 +10,14 @@ const createCard = (req, res, next) => {
       throw new BadRequestError(`Некорректные данные: ${err.message}`);
     })
     // вернём записанные в базу данные
-    .then((card) => res.status(201).send({ data: card }))
+    .then((card) => res.status(200).send(card))
     // данные не записались, вернём ошибку
     .catch(next);
 };
 
 const getCards = (req, res, next) => {
   Card.find({})
-    .then((users) => res.status(200).send(users))
+    .then((cards) => res.status(200).send(cards))
     .catch(next);
 };
 
@@ -37,4 +37,29 @@ const deleteCardById = (req, res, next) => {
     })
     .catch(next);
 };
-module.exports = { createCard, getCards, deleteCardById };
+const likeCard = (req, res, next) => {
+  Card.findByIdAndUpdate(req.params.id,
+    { $addToSet: { likes: req.user._id } },
+    { new: true })
+    .orFail()
+    .catch(() => {
+      throw new NotFoundError('Карточка с таким id не найдена');
+    })
+    .then((likes) => res.send(likes))
+    .catch(next);
+};
+
+const dislikeCard = (req, res, next) => {
+  Card.findByIdAndUpdate(req.params.id,
+    { $pull: { likes: req.user._id } },
+    { new: true })
+    .orFail()
+    .catch(() => {
+      throw new NotFoundError('Карточка с таким id не найдена');
+    })
+    .then((likes) => res.send(likes))
+    .catch(next);
+};
+module.exports = {
+  createCard, getCards, deleteCardById, likeCard, dislikeCard,
+};

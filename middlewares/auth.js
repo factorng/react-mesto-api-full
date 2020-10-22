@@ -2,7 +2,8 @@ const jwt = require('jsonwebtoken');
 const UnauthorizedError = require('../errors/unauthorized-err');
 
 const auth = (req, res, next) => {
-  const token = req.cookies.jwt;
+  const token = req.headers.authorization
+        && req.headers.authorization.replace('Bearer ', '');
   let payload;
   try {
     payload = jwt.verify(token, 'processenvJWT_SECRET');
@@ -11,7 +12,6 @@ const auth = (req, res, next) => {
   }
 
   req.user = payload; // записываем пейлоуд в объект запроса
-
   next(); // пропускаем запрос дальше
 };
 
