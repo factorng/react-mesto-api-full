@@ -73,8 +73,19 @@ app.use(errors()); // обработчик ошибок celebrate
 
 app.use((err, req, res, next) => {
   // если у ошибки нет статуса, выставляем 500
-  const { statusCode = 500, message } = err;
-
+  let { statusCode = 500, message } = err;
+  if (err.name === 'MongoError' && err.code === 11000) {
+    statusCode = 409;
+    message = 'Пользователь с таким email уже зарегестрирован';
+  }
+  if (err.name === 'ValidationError') {
+    statusCode = 400;
+    message = 'Ошибка валидации';
+  }
+  if (err.name === 'CastError') {
+    statusCode = 400;
+    message = 'Передан некорректный идентификатор';
+  }
   res
     .status(statusCode)
     .send({

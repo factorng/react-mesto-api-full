@@ -16,8 +16,29 @@ router.delete('/cards/:cardId', celebrate({
     cardId: Joi.string().required().hex(),
   }).unknown(true),
 }), deleteCardById);
-router.get('/cards', getCards);
-router.put('/cards/likes/:id', likeCard);
-router.delete('/cards/likes/:id', dislikeCard);
+
+router.get('/cards', celebrate({
+  headers: Joi.object().keys({
+    authorization: Joi.string().required().min(100),
+  }).unknown(true),
+}), getCards);
+
+router.put('/cards/likes/:id', celebrate({
+  headers: Joi.object().keys({
+    authorization: Joi.string().required().min(100),
+  }).unknown(true),
+  params: Joi.object().keys({
+    cardId: Joi.string().hex().length(24),
+  }),
+}), likeCard);
+
+router.delete('/cards/likes/:id', celebrate({
+  headers: Joi.object().keys({
+    authorization: Joi.string().required().min(100),
+  }).unknown(true),
+  params: Joi.object().keys({
+    cardId: Joi.string().hex().length(24),
+  }),
+}), dislikeCard);
 
 module.exports = router;
