@@ -28,7 +28,7 @@ router.put('/cards/likes/:id', celebrate({
     authorization: Joi.string().required().min(100),
   }).unknown(true),
   params: Joi.object().keys({
-    cardId: Joi.string().hex().length(24),
+    id: Joi.string().hex(),
   }),
 }), likeCard);
 
@@ -37,7 +37,7 @@ router.delete('/cards/likes/:id', celebrate({
     authorization: Joi.string().required().min(100),
   }).unknown(true),
   params: Joi.object().keys({
-    cardId: Joi.string().hex().length(24),
+    id: Joi.string().hex(),
   }),
 }), dislikeCard);
 

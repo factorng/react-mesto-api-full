@@ -105,7 +105,7 @@ const updateUserAvatar = (req, res, next) => {
       }
       throw new BadRequestError(`Некорректные данные при обновлении аватара: ${err.message}`);
     })
-    .then((newAvatar) => res.send({ data: newAvatar }))
+    .then((newAvatar) => res.send(newAvatar))
     .catch(next);
 };
 
