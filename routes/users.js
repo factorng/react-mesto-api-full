@@ -1,5 +1,4 @@
 const router = require('express').Router();
-const validator = require('validator');
 const { celebrate, Joi } = require('celebrate');
 const {
   getUsers, getUserById, updateUser, updateUserAvatar, getUser,
@@ -26,9 +25,10 @@ router.get('/users/me', celebrate({
     authorization: Joi.string().required().min(100),
   }).unknown(true),
 }), getUser);
+
 router.get('/users/:id', celebrate({
   params: Joi.object().keys({
-    _id: Joi.string().required().hex(),
+    id: Joi.string().required().hex().length(24),
   }),
 }), getUserById);
 

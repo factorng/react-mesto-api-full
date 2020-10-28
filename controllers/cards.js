@@ -1,14 +1,10 @@
 const Card = require('../models/card');
 const NotFoundError = require('../errors/not-found-err');
-const BadRequestError = require('../errors/bad-request-err');
 const ForbiddenError = require('../errors/forbidden-err');
 
 const createCard = (req, res, next) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
-    .catch((err) => {
-      throw new BadRequestError(`Некорректные данные: ${err.message}`);
-    })
     // вернём записанные в базу данные
     .then((card) => res.status(200).send(card))
     // данные не записались, вернём ошибку

@@ -1,34 +1,26 @@
 const bcrypt = require('bcryptjs'); // импортируем bcrypt
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const ConflictError = require('../errors/conflict-err');
 const NotFoundError = require('../errors/not-found-err');
 const BadRequestError = require('../errors/bad-request-err');
 
 const createUser = (req, res, next) => {
   const {
-    name, about, avatar, email, password,
+    email, password,
   } = req.body;
-  console.log(req.body);
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
-      name,
-      about,
-      avatar,
+      name: 'default Name',
+      about: 'default about',
+      avatar: 'https://www.centrinvest.ru/upload/iblock/879/nologosmi.jpg',
       email,
       password: hash,
     }))
-    .catch((err) => {
-      if (err.name === 'MongoError' || err.code === 11000) {
-        throw new ConflictError('Пользователь с таким email уже зарегистрирован');
-      } else next(err);
-    })
-    .then((user) => res.status(201).send(user))
+    .then(() => res.status(201).send({ message: 'Пользователь зарегистрирован' }))
     .catch(next);
 };
 
 const getUsers = (req, res, next) => {
-  console.log('get users');
   User.find({})
     .then((users) => res.status(200).send(users))
     .catch(next);
@@ -38,7 +30,6 @@ const getUserById = (req, res, next) => {
   User.findById(req.params.id)
     .orFail()
     .catch(() => {
-      console.log('req params', req);
       throw new NotFoundError('Нет пользователя с таким id');
     })
     .then((user) => res.status(200).send(user))
@@ -47,31 +38,20 @@ const getUserById = (req, res, next) => {
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
-  console.log(email, password);
   return User.findUserByCredentials(email, password)
     .then((user) => {
     // аутентификация успешна! пользователь в переменной user
-      console.log('login');
-      const token = jwt.sign(
-        { _id: user._id },
-        'processenvJWT_SECRET',
-        { expiresIn: '7d' },
-      );
+      const token = jwt.sign({ _id: user._id },
+        process.env.NODE_ENV === 'production' ? process.env.JWT_SECRET : 'something',
+        { expiresIn: '7d' });
       // вернём токен
-      res
-        .cookie('jwt', token, {
-          maxAge: 3600000 * 24 * 7,
-          httpOnly: true,
-          sameSite: true,
-        })
-        .send({ token });
+      res.send({ token });
     })
     .catch(next);
 };
 
 const updateUser = (req, res, next) => {
   const { name, about } = req.body;
-  console.log(name, about);
   User.findByIdAndUpdate(req.user._id,
     { name, about },
     {
@@ -109,16 +89,11 @@ const updateUserAvatar = (req, res, next) => {
     .catch(next);
 };
 
-const getUser = (req, res) => {
+const getUser = (req, res, next) => {
   User.findById(req.user._id)
-    .orFail(new Error('NotFoundId'))
+    .orFail(() => new NotFoundError('Пользователь с таким id не найден'))
     .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      if (err.message === 'NotFoundId') {
-        return res.status(404).send({ message: 'Нет пользователя с таким id' });
-      }
-      return res.status(500).send({ message: 'На сервере произошла ошибка' });
-    });
+    .catch(next);
 };
 
 module.exports = {
