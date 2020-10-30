@@ -67,10 +67,12 @@ app.use(errorLogger); // подключаем логгер ошибок
 
 app.use(errors()); // обработчик ошибок celebrate
 
-app.use((err, req, res) => {
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
   // если у ошибки нет статуса, выставляем 500
   let { statusCode = 500, message } = err;
-  if (err.name === 'MongoError' && err.code === 11000) {
+  // eslint-disable-next-line eqeqeq
+  if (err.name == 'MongoError' && err.code == 11000) {
     statusCode = 409;
     message = 'Пользователь с таким email уже зарегестрирован';
   }
