@@ -2,7 +2,6 @@ const bcrypt = require('bcryptjs'); // импортируем bcrypt
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-err');
-const BadRequestError = require('../errors/bad-request-err');
 
 const createUser = (req, res, next) => {
   const {
@@ -28,10 +27,7 @@ const getUsers = (req, res, next) => {
 
 const getUserById = (req, res, next) => {
   User.findById(req.params.id)
-    .orFail()
-    .catch(() => {
-      throw new NotFoundError('Нет пользователя с таким id');
-    })
+    .orFail(new NotFoundError('Нет пользователя с таким id'))
     .then((user) => res.status(200).send(user))
     .catch(next);
 };
@@ -59,12 +55,6 @@ const updateUser = (req, res, next) => {
       runValidators: true,
     })
     .orFail(() => new NotFoundError('Пользователь с таким id не найден'))
-    .catch((err) => {
-      if (err instanceof NotFoundError) {
-        throw err;
-      }
-      throw new BadRequestError(`Некорректные данные при обновлении пользователя: ${err.message}`);
-    })
     .then((user) => res.send(user))
     .catch(next);
 };
@@ -79,12 +69,6 @@ const updateUserAvatar = (req, res, next) => {
       runValidators: true,
     })
     .orFail(() => new NotFoundError('Пользователь с таким id не найден'))
-    .catch((err) => {
-      if (err instanceof NotFoundError) {
-        throw err;
-      }
-      throw new BadRequestError(`Некорректные данные при обновлении аватара: ${err.message}`);
-    })
     .then((newAvatar) => res.send(newAvatar))
     .catch(next);
 };
